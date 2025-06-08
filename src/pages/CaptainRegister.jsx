@@ -1,6 +1,8 @@
 // import { useState } from "react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext";
+import axios from "axios";
 
 const UserRegister = () => {
     const [firstname, setFirstName] = useState('');
@@ -11,8 +13,10 @@ const UserRegister = () => {
     const [vPlate, setVehiclePlate] = useState('');
     const [vCapacity, setVehicleCapacity] = useState('');
     const [vType, setVehicleType] = useState('');
-    const [captainData, setCaptainData] = useState({});
-    const submitHandler = (e) => {
+
+    const { setCaptain } = useContext(CaptainDataContext)
+    const navigate= useNavigate()
+    const submitHandler = async (e) => {
         e.preventDefault();
         setFirstName('');
         setLastName('');
@@ -22,21 +26,27 @@ const UserRegister = () => {
         setVehiclePlate('');
         setVehicleCapacity('');
         setVehicleType('');
-        setCaptainData({
-            fullName: {
-                firstName: firstname,
-                lastName: lastname
+        const captainData = {
+            fullname: {
+                firstname: firstname,
+                lastname: lastname
             },
             email: email,
             password: password,
-            // vehicle: {
-            //     color: vColor,
-            //     plate: vPlate,
-            //     capacity: vCapacity,
-            //     type: vType
-            // }
-        });
-        // console.log("User Data:", captainData);
+            vehicle: {
+                color: vColor,
+                plate: vPlate,
+                capacity: vCapacity,
+                vehicleType: vType
+            }
+        }
+        const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData)
+        if (res.status === 201) {
+            const data = res.data
+            setCaptain(data.user)
+            localStorage.setItem('token', data.token)
+            navigate('/cap-home')
+        }
         e.target.reset();  // Reset the form fields after submission
     }
     return (
@@ -124,7 +134,7 @@ const UserRegister = () => {
                             <button
                                 type="submit"
                                 className="bg-black hover:bg-gray-800 transition-all duration-200 text-white font-semibold px-4 py-2 w-full text-lg rounded-xl">
-                                Login
+                                Register Captain
                             </button>
                         </form>
                         <p className="text-center text-black font-semibold text-base drop-shadow-lg mt-4 mb-2">Do you have an account? <Link

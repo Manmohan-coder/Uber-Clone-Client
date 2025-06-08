@@ -1,21 +1,31 @@
-import { useState } from "react";
-import { Link } from "react-router-dom"
+import axios from "axios";
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom"
+import { CaptainDataContext } from "../context/CaptainContext";
 
 const CaptainLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [captainData, setCaptainData] = useState({});
 
+    const { setCaptain } = useContext(CaptainDataContext)
+    const navigate = useNavigate()
 
-    const submitHandler = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
         setEmail('');
         setPassword('');
-        setCaptainData({
+        const captainData = {
             email: email,
             password: password
-        });
-        // console.log("Captain Data:", captainData);
+        }
+        const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData)
+        if (res.status === 200) {
+            const data = res.data
+            setCaptain(data.user)
+            localStorage.setItem('token', data.token)
+            navigate('/cap-home')
+        }
+        e.target.reset(); 
     }
     return (
         <>
@@ -32,7 +42,7 @@ const CaptainLogin = () => {
                     {/* Login Card */}
                     <div className="mt-5 backdrop-blur-xl bg-white/20 shadow-2xl rounded-3xl px-5 py-5 w-[90%] max-w-md transition-all duration-75 hover:scale-[1.02]">
 
-                        <form onSumbit={submitHandler} className="w-full">
+                        <form onSubmit={submitHandler} className="w-full">
                             <h3 htmlFor="username" className="block mb-2 font-semibold text-xl drop-shadow-xl text-black">Enter Captain Email</h3>
                             <input
                                 required
@@ -73,7 +83,7 @@ const CaptainLogin = () => {
 
                     {/* Additional Options */}
                     <div className="flex flex-col items-center justify-center mt-60 backdrop-blur-md bg-white/30 shadow-xl rounded-xl p-6 w-full max-w-md">
-                        
+
 
                         <p className="text-center text-black font-semibold text-balance drop-shadow-lg mb-2">Are you a User?</p>
                         <Link

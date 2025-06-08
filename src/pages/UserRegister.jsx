@@ -1,30 +1,41 @@
-import { useState } from 'react'
-import { Link } from "react-router-dom";
-
-
+import { useContext, useState } from 'react'
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios'
+import { UserDataContext } from '../context/UserContext';
 
 const UserRegister = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
-    const [userData, setUserData] = useState({});
-    const submitHandler = (e) => {
+
+    
+    const navigate = useNavigate()
+    
+    const { setUser } = useContext(UserDataContext)
+
+
+    const submitHandler = async (e) => {
         e.preventDefault();
-        setEmail('');
-        setPassword('');
         setFirstName('');
         setLastName('');
-        setUserData({
-            fullName: {
-                firstName: firstName,
-                lastName: lastName
+        setEmail('');
+        setPassword('');
+        const newUser = {
+            fullname: {
+                firstname: firstname,
+                lastname: lastname
             },
             email: email,
             password: password,
-
-        });
-        // console.log("User Data:", userData);
+        }
+        const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+        if (res.status === 201) {
+            const data = res.data
+            setUser(data.user)
+            localStorage.setItem('token',data.token)
+            navigate('/home')
+        }
         e.target.reset();  // Reset the form fields after submission
 
     }
@@ -78,7 +89,7 @@ const UserRegister = () => {
                             <button
                                 type="submit"
                                 className="bg-black hover:bg-gray-800 transition-all duration-200 text-white font-semibold px-4 py-2 w-full text-lg rounded-xl">
-                                Login
+                                Register User
                             </button>
                         </form>
                         <p className="text-center text-black font-semibold text-base drop-shadow-lg mt-4 mb-2">Do you have an account? <Link
